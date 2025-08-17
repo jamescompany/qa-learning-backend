@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+VENV/
+.venv
+*.egg-info/
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Uploads
+uploads/
+
+# Alembic
+alembic/versions/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Other
+*.pid
+*.seed
+*.pid.lock
