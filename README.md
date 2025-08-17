@@ -1,4 +1,4 @@
-# QA Learning App - Backend
+# QA Learning Web - Backend
 
 FastAPI 기반의 QA 학습 애플리케이션 백엔드 서버입니다.
 
