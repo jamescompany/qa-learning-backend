@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from database import get_db
 from schemas.auth import (
@@ -24,22 +24,51 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/minute")
 async def register(
-    request: RegisterRequest,
+    request: Request,
+    register_data: RegisterRequest,
     db: Session = Depends(get_db)
 ):
     """Register a new user account"""
-    user = AuthService.register(db, request)
+    user = AuthService.register(db, register_data)
     return user
 
 
 @router.post("/login", response_model=TokenResponse)
 @limiter.limit("10/minute")
 async def login(
-    request: LoginRequest,
+    request: Request,
+    login_data: LoginRequest,
     db: Session = Depends(get_db)
 ):
     """Login with email and password"""
-    return AuthService.login(db, request)
+    return AuthService.login(db, login_data)
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get current user information"""
+    return current_user
+
+
+@router.patch("/profile", response_model=UserResponse)
+async def update_profile(
+    update_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update current user profile"""
+    # Update allowed fields only
+    allowed_fields = ["full_name", "bio", "avatar_url"]
+    for field in allowed_fields:
+        if field in update_data:
+            setattr(current_user, field, update_data[field])
+    
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 
 @router.post("/refresh", response_model=TokenResponse)
