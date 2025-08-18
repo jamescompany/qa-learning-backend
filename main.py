@@ -59,9 +59,9 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="A comprehensive QA Learning Application API",
-    docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None,
-    openapi_url="/openapi.json" if settings.DEBUG else None,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
     lifespan=lifespan
 )
 
@@ -84,7 +84,7 @@ async def root():
         "version": settings.APP_VERSION,
         "status": "running",
         "environment": settings.ENVIRONMENT,
-        "docs": "/docs" if settings.DEBUG else None
+        "docs": "/docs"
     }
 
 
