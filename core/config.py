@@ -3,9 +3,8 @@ from pydantic_settings import BaseSettings
 from pydantic import Field, validator
 import os
 
-
 class Settings(BaseSettings):
-    APP_NAME: str = "QA Learning App"
+    APP_NAME: str = "QA Learning Web"
     APP_VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     
@@ -34,7 +33,9 @@ class Settings(BaseSettings):
     @validator("CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: str | List[str]) -> List[str]:
         if isinstance(v, str):
-            return [i.strip() for i in v.split(",")]
+            if not v or v.strip() == "":
+                return ["http://localhost:3000", "http://localhost:5173"]
+            return [i.strip() for i in v.split(",") if i.strip()]
         return v
     
     SMTP_HOST: Optional[str] = Field(default=None, env="SMTP_HOST")
