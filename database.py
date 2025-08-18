@@ -33,6 +33,30 @@ def init_db() -> None:
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
+        
+        # Ensure schema is up to date (add missing columns if needed)
+        with engine.connect() as conn:
+            # Check if location and website columns exist
+            result = conn.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'users' 
+                AND column_name IN ('location', 'website')
+            """))
+            existing_columns = [row[0] for row in result]
+            
+            if 'location' not in existing_columns or 'website' not in existing_columns:
+                logger.info("Adding missing columns to users table...")
+                conn.execute(text("""
+                    ALTER TABLE users 
+                    ADD COLUMN IF NOT EXISTS location VARCHAR
+                """))
+                conn.execute(text("""
+                    ALTER TABLE users 
+                    ADD COLUMN IF NOT EXISTS website VARCHAR
+                """))
+                conn.commit()
+                logger.info("Added location and website columns to users table")
     except Exception as e:
         logger.error(f"Error creating database tables: {e}")
         raise
