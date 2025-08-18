@@ -1,5 +1,7 @@
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.utils import get_openapi
 from contextlib import asynccontextmanager
 import logging
 import sys
@@ -126,6 +128,40 @@ async def ready_check():
         )
     
     return {"ready": True}
+
+
+# Explicitly define custom OpenAPI schema
+@app.get("/openapi.json", include_in_schema=False)
+async def get_open_api_endpoint():
+    """Get OpenAPI schema"""
+    return JSONResponse(
+        get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+        )
+    )
+
+
+# Swagger UI endpoint
+@app.get("/docs", include_in_schema=False)
+async def get_documentation():
+    """Swagger UI documentation"""
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title=f"{app.title} - Swagger UI"
+    )
+
+
+# ReDoc endpoint
+@app.get("/redoc", include_in_schema=False)
+async def get_redoc():
+    """ReDoc documentation"""
+    return get_redoc_html(
+        openapi_url="/openapi.json",
+        title=f"{app.title} - ReDoc"
+    )
 
 
 if __name__ == "__main__":
