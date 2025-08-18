@@ -25,18 +25,23 @@ class Settings(BaseSettings):
     
     REDIS_URL: str = Field(default="redis://localhost:6379", env="REDIS_URL")
     
-    CORS_ORIGINS: List[str] = Field(
-        default=["http://localhost:3000", "http://localhost:5173"],
+    # CORS_ORIGINS as a simple string field that gets parsed in validator
+    CORS_ORIGINS: str | List[str] = Field(
+        default="http://localhost:3000,http://localhost:5173",
         env="CORS_ORIGINS"
     )
     
-    @validator("CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: str | List[str]) -> List[str]:
+    @validator("CORS_ORIGINS", pre=False)
+    def assemble_cors_origins(cls, v):
+        if v is None:
+            return ["http://localhost:3000", "http://localhost:5173"]
         if isinstance(v, str):
             if not v or v.strip() == "":
                 return ["http://localhost:3000", "http://localhost:5173"]
             return [i.strip() for i in v.split(",") if i.strip()]
-        return v
+        elif isinstance(v, list):
+            return v
+        return ["http://localhost:3000", "http://localhost:5173"]
     
     SMTP_HOST: Optional[str] = Field(default=None, env="SMTP_HOST")
     SMTP_PORT: Optional[int] = Field(default=587, env="SMTP_PORT")
