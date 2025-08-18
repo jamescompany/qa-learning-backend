@@ -25,18 +25,23 @@ class Settings(BaseSettings):
     
     REDIS_URL: str = Field(default="redis://localhost:6379", env="REDIS_URL")
     
-    CORS_ORIGINS: List[str] = Field(
-        default=["http://localhost:3000", "http://localhost:5173"],
+    # CORS_ORIGINS as a simple string field that gets parsed in validator
+    CORS_ORIGINS: str | List[str] = Field(
+        default="http://localhost:3000,http://localhost:5173",
         env="CORS_ORIGINS"
     )
     
-    @validator("CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: str | List[str]) -> List[str]:
+    @validator("CORS_ORIGINS", pre=False)
+    def assemble_cors_origins(cls, v):
+        if v is None:
+            return ["http://localhost:3000", "http://localhost:5173"]
         if isinstance(v, str):
             if not v or v.strip() == "":
                 return ["http://localhost:3000", "http://localhost:5173"]
             return [i.strip() for i in v.split(",") if i.strip()]
-        return v
+        elif isinstance(v, list):
+            return v
+        return ["http://localhost:3000", "http://localhost:5173"]
     
     SMTP_HOST: Optional[str] = Field(default=None, env="SMTP_HOST")
     SMTP_PORT: Optional[int] = Field(default=587, env="SMTP_PORT")
@@ -46,16 +51,23 @@ class Settings(BaseSettings):
     
     UPLOAD_DIR: str = Field(default="uploads", env="UPLOAD_DIR")
     MAX_UPLOAD_SIZE: int = Field(default=10 * 1024 * 1024, env="MAX_UPLOAD_SIZE")  # 10MB
-    ALLOWED_EXTENSIONS: List[str] = Field(
-        default=["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx"],
+    # ALLOWED_EXTENSIONS as a simple string field that gets parsed in validator
+    ALLOWED_EXTENSIONS: str | List[str] = Field(
+        default="jpg,jpeg,png,gif,pdf,doc,docx",
         env="ALLOWED_EXTENSIONS"
     )
     
-    @validator("ALLOWED_EXTENSIONS", pre=True)
-    def assemble_allowed_extensions(cls, v: str | List[str]) -> List[str]:
+    @validator("ALLOWED_EXTENSIONS", pre=False)
+    def assemble_allowed_extensions(cls, v):
+        if v is None:
+            return ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx"]
         if isinstance(v, str):
-            return [i.strip() for i in v.split(",")]
-        return v
+            if not v or v.strip() == "":
+                return ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx"]
+            return [i.strip() for i in v.split(",") if i.strip()]
+        elif isinstance(v, list):
+            return v
+        return ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx"]
     
     JWT_SECRET_KEY: Optional[str] = Field(default=None, env="JWT_SECRET_KEY")
     
