@@ -125,10 +125,10 @@ def setup_middleware(app):
     )
     
     # Add trusted host middleware (production only)
-    if settings.ENVIRONMENT == "production":
+    if settings.ENVIRONMENT in ["production", "development"]:
         app.add_middleware(
             TrustedHostMiddleware,
-            allowed_hosts=["*.qalearningweb.com", "qalearningweb.com", "*.railway.app"]
+            allowed_hosts=["*"]  # Allow all hosts for now to debug
         )
     
     # Add custom middleware (order matters - executed in reverse order)
