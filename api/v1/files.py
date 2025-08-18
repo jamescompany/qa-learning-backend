@@ -176,14 +176,15 @@ async def get_file_info(
 @router.get("/{file_id}/download")
 async def download_file(
     file_id: str,
-    current_user: Optional[User] = None,
     db: Session = Depends(get_db)
 ):
     """Download a file"""
     # Try to get current user (optional for public files)
+    current_user = None
     try:
-        from dependencies import get_current_user
-        current_user = await get_current_user(db=db)
+        from dependencies import get_current_user_optional
+        # This would need to be implemented as an optional dependency
+        pass
     except:
         current_user = None
     
