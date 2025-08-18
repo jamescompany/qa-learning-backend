@@ -44,6 +44,33 @@ async def login(
     return AuthService.login(db, login_data)
 
 
+@router.get("/me", response_model=UserResponse)
+async def get_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get current user information"""
+    return current_user
+
+
+@router.patch("/profile", response_model=UserResponse)
+async def update_profile(
+    update_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update current user profile"""
+    # Update allowed fields only
+    allowed_fields = ["full_name", "bio", "avatar_url"]
+    for field in allowed_fields:
+        if field in update_data:
+            setattr(current_user, field, update_data[field])
+    
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(
     request: RefreshTokenRequest,

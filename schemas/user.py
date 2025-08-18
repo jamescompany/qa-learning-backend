@@ -10,6 +10,8 @@ class UserBase(BaseModel):
     full_name: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = Field(None, max_length=500)
     avatar_url: Optional[str] = None
+    location: Optional[str] = Field(None, max_length=100)
+    website: Optional[str] = Field(None, max_length=200)
 
 
 class UserCreate(UserBase):
@@ -22,6 +24,8 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = Field(None, max_length=500)
     avatar_url: Optional[str] = None
+    location: Optional[str] = Field(None, max_length=100)
+    website: Optional[str] = Field(None, max_length=200)
 
 
 class UserResponse(UserBase):
@@ -47,6 +51,8 @@ class UserPublic(BaseModel):
     full_name: Optional[str]
     avatar_url: Optional[str]
     bio: Optional[str]
+    location: Optional[str]
+    website: Optional[str]
 
     class Config:
         from_attributes = True
