@@ -1,6 +1,5 @@
 from fastapi import Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from slowapi import _rate_limit_exceeded_handler
@@ -123,13 +122,6 @@ def setup_middleware(app):
         allow_headers=["*"],
         expose_headers=["X-Request-ID", "X-Process-Time"]
     )
-    
-    # Add trusted host middleware (production only)
-    if settings.ENVIRONMENT == "production":
-        app.add_middleware(
-            TrustedHostMiddleware,
-            allowed_hosts=["*.qa-learning.com", "qa-learning.com"]
-        )
     
     # Add custom middleware (order matters - executed in reverse order)
     app.add_middleware(ErrorHandlingMiddleware)
