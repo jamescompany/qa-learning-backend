@@ -97,7 +97,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_PERIOD: int = Field(default=60, env="RATE_LIMIT_PERIOD")  # seconds
     
     class Config:
-        env_file = ".env"
+        env_file = ".env.local"
         env_file_encoding = "utf-8"
         case_sensitive = True
 
