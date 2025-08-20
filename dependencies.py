@@ -37,6 +37,9 @@ async def get_current_user(
     if not user:
         raise UserNotFoundException()
     
+    if user.is_deleted:
+        raise UserNotFoundException()  # Don't reveal that account was deleted
+    
     if not user.is_active:
         raise UnauthorizedException(detail="User account is inactive")
     
