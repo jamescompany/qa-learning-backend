@@ -27,6 +27,8 @@ class User(Base):
     role = Column(SQLEnum(UserRole), default=UserRole.USER, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
+    is_deleted = Column(Boolean, default=False, nullable=False)
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
     verification_code = Column(String, nullable=True)
     reset_password_token = Column(String, nullable=True)
     reset_password_expire = Column(DateTime(timezone=True), nullable=True)

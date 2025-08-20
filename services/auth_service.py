@@ -30,12 +30,18 @@ logger = logging.getLogger(__name__)
 class AuthService:
     @staticmethod
     def register(db: Session, request: RegisterRequest) -> User:
-        # Check if email exists
-        if db.query(User).filter(User.email == request.email).first():
+        # Check if email exists (including deleted accounts)
+        existing_user = db.query(User).filter(User.email == request.email).first()
+        if existing_user:
+            if existing_user.is_deleted:
+                raise BadRequestException(detail="This email was previously used and cannot be reused")
             raise EmailAlreadyExistsException()
         
-        # Check if username exists
-        if db.query(User).filter(User.username == request.username).first():
+        # Check if username exists (including deleted accounts)
+        existing_username = db.query(User).filter(User.username == request.username).first()
+        if existing_username:
+            if existing_username.is_deleted:
+                raise BadRequestException(detail="This username was previously used and cannot be reused")
             raise UsernameAlreadyExistsException()
         
         # Validate password strength
@@ -70,6 +76,10 @@ class AuthService:
         user = db.query(User).filter(User.email == request.email).first()
         if not user:
             raise InvalidCredentialsException()
+        
+        # Check if user is deleted
+        if user.is_deleted:
+            raise InvalidCredentialsException()  # Don't reveal that account was deleted
         
         # Verify password
         if not verify_password(request.password, user.hashed_password):
@@ -106,6 +116,9 @@ class AuthService:
         if not user:
             raise UserNotFoundException()
         
+        if user.is_deleted:
+            raise UserNotFoundException()  # Don't reveal that account was deleted
+        
         if not user.is_active:
             raise BadRequestException(detail="User account is inactive")
         
@@ -136,7 +149,7 @@ class AuthService:
     
     @staticmethod
     def request_password_reset(db: Session, email: str) -> str:
-        user = db.query(User).filter(User.email == email).first()
+        user = db.query(User).filter(User.email == email, User.is_deleted == False).first()
         if not user:
             # Return success even if user not found (security)
             return "Password reset instructions sent if account exists"
@@ -152,7 +165,7 @@ class AuthService:
     
     @staticmethod
     def reset_password(db: Session, token: str, new_password: str) -> User:
-        user = db.query(User).filter(User.reset_password_token == token).first()
+        user = db.query(User).filter(User.reset_password_token == token, User.is_deleted == False).first()
         
         if not user:
             raise InvalidTokenException(detail="Invalid or expired reset token")

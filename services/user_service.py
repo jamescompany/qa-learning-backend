@@ -1,4 +1,5 @@
 from typing import Optional, List
+from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from core.exceptions import (
@@ -18,18 +19,27 @@ logger = logging.getLogger(__name__)
 class UserService:
     @staticmethod
     def get_user(db: Session, user_id: str) -> User:
-        user = db.query(User).filter(User.id == user_id).first()
+        user = db.query(User).filter(
+            User.id == user_id,
+            User.is_deleted == False
+        ).first()
         if not user:
             raise UserNotFoundException()
         return user
     
     @staticmethod
     def get_user_by_email(db: Session, email: str) -> Optional[User]:
-        return db.query(User).filter(User.email == email).first()
+        return db.query(User).filter(
+            User.email == email,
+            User.is_deleted == False
+        ).first()
     
     @staticmethod
     def get_user_by_username(db: Session, username: str) -> Optional[User]:
-        return db.query(User).filter(User.username == username).first()
+        return db.query(User).filter(
+            User.username == username,
+            User.is_deleted == False
+        ).first()
     
     @staticmethod
     def get_users(
@@ -41,7 +51,7 @@ class UserService:
         is_active: Optional[bool] = None,
         is_verified: Optional[bool] = None
     ) -> List[User]:
-        query = db.query(User)
+        query = db.query(User).filter(User.is_deleted == False)
         
         if search:
             search_filter = f"%{search}%"
@@ -72,7 +82,7 @@ class UserService:
         is_active: Optional[bool] = None,
         is_verified: Optional[bool] = None
     ) -> int:
-        query = db.query(User)
+        query = db.query(User).filter(User.is_deleted == False)
         
         if search:
             search_filter = f"%{search}%"
@@ -157,10 +167,14 @@ class UserService:
     @staticmethod
     def delete_user(db: Session, user_id: str) -> bool:
         user = UserService.get_user(db, user_id)
-        db.delete(user)
+        # Soft delete: mark as deleted instead of removing from database
+        user.is_deleted = True
+        user.deleted_at = datetime.utcnow()
+        user.is_active = False  # Also deactivate the account
         db.commit()
+        db.refresh(user)
         
-        logger.info(f"User deleted: {user.email}")
+        logger.info(f"User soft deleted: {user.email}")
         return True
     
     @staticmethod
