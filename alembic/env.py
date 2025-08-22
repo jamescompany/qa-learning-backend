@@ -5,9 +5,17 @@ from alembic import context
 import os
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
+
+# Load environment variables based on ENVIRONMENT setting
+env = os.getenv('ENVIRONMENT', 'development')
+if env == 'production':
+    load_dotenv('.env.production')
+else:
+    load_dotenv('.env.development')
 
 # Import your models and Base
 from database import Base
@@ -22,10 +30,13 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Get database URL from environment
+# Get database URL from environment or use from config file
 database_url = os.getenv('DATABASE_URL')
 if database_url:
     config.set_main_option('sqlalchemy.url', database_url)
+else:
+    # Fallback to config file URL if no env variable set
+    print(f"Using database URL from alembic config file for {env} environment")
 
 target_metadata = Base.metadata
 
