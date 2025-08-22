@@ -10,11 +10,11 @@ Railway 대시보드에서 다음 환경 변수를 설정해야 합니다:
 # Application
 DEBUG=False
 ENVIRONMENT=production
-SECRET_KEY=wyBX2SNDKo03TETCi82cX1J_uxt727-w7Z5_YvkiMuQ3qWl8BRZJAq_4_RzjH003
-JWT_SECRET_KEY=nh_OrGzFX7pwf6mqLoqMklxILxwB2RgYFgaBm1AFD-uif3h7LIhjfvt96fq8FKan
+SECRET_KEY=[Railway 대시보드에서 설정 - 최소 32자 이상의 랜덤 문자열]
+JWT_SECRET_KEY=[Railway 대시보드에서 설정 - 최소 32자 이상의 랜덤 문자열]
 
 # Database (Railway PostgreSQL)
-DATABASE_URL=postgresql://postgres:DKor1f3ZgyMETC20zgQ68sJoSLGz8Mfs@hopper.proxy.rlwy.net:40209/railway
+DATABASE_URL=[Railway PostgreSQL 서비스에서 제공하는 DATABASE_URL]
 
 # Redis (Railway Redis 추가 필요)
 REDIS_URL=redis://localhost:6379  # Railway Redis 서비스 추가 후 변경
@@ -25,10 +25,10 @@ CORS_ORIGINS=https://www.qalearningweb.com
 # Email (Zoho Mail)
 SMTP_HOST=smtp.zoho.com
 SMTP_PORT=587
-SMTP_USER=support@qalearningweb.com
+SMTP_USER=[이메일 주소]
 SMTP_PASSWORD=[Zoho 앱 비밀번호]  # Zoho 계정에서 생성 필요
-SMTP_FROM=support@qalearningweb.com
-ADMIN_EMAIL=support@qalearningweb.com
+SMTP_FROM=[발신 이메일 주소]
+ADMIN_EMAIL=[관리자 이메일 주소]
 
 # Rate Limiting
 RATE_LIMIT_ENABLED=true
