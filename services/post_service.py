@@ -7,7 +7,7 @@ from core.exceptions import (
     BadRequestException,
     InsufficientPermissionsException
 )
-from models import Post, PostStatus, Tag, PostTag, User
+from models import Post, PostStatus, Tag, PostTag, User, Comment
 from schemas.post import PostCreate, PostUpdate
 import re
 import logging
@@ -29,7 +29,7 @@ class PostService:
         post = db.query(Post).options(
             joinedload(Post.author),
             joinedload(Post.tags),
-            joinedload(Post.comments)
+            joinedload(Post.comments).joinedload(Comment.author)
         ).filter(Post.id == post_id).first()
         
         if not post:
@@ -41,7 +41,7 @@ class PostService:
         post = db.query(Post).options(
             joinedload(Post.author),
             joinedload(Post.tags),
-            joinedload(Post.comments)
+            joinedload(Post.comments).joinedload(Comment.author)
         ).filter(Post.slug == slug).first()
         
         if not post:
@@ -169,12 +169,22 @@ class PostService:
         db.add(post)
         db.flush()  # Get post ID before adding tags
         
-        # Add tags
+        # Add tags (handle both tag IDs and tag names)
         if post_create.tags:
-            for tag_id in post_create.tags:
-                tag = db.query(Tag).filter(Tag.id == tag_id).first()
+            for tag_input in post_create.tags:
+                # Check if it's a UUID (tag ID) or a name
+                tag = None
+                try:
+                    # Try to parse as UUID
+                    import uuid
+                    uuid.UUID(tag_input)
+                    tag = db.query(Tag).filter(Tag.id == tag_input).first()
+                except ValueError:
+                    # It's a tag name, create or get the tag
+                    tag = PostService.get_or_create_tag(db, tag_input)
+                
                 if tag:
-                    post_tag = PostTag(post_id=post.id, tag_id=tag_id)
+                    post_tag = PostTag(post_id=post.id, tag_id=tag.id)
                     db.add(post_tag)
         
         db.commit()
@@ -221,11 +231,20 @@ class PostService:
             # Remove old tags
             db.query(PostTag).filter(PostTag.post_id == post_id).delete()
             
-            # Add new tags
-            for tag_id in update_data["tags"]:
-                tag = db.query(Tag).filter(Tag.id == tag_id).first()
+            # Add new tags (handle both tag IDs and tag names)
+            for tag_input in update_data["tags"]:
+                tag = None
+                try:
+                    # Try to parse as UUID
+                    import uuid
+                    uuid.UUID(tag_input)
+                    tag = db.query(Tag).filter(Tag.id == tag_input).first()
+                except ValueError:
+                    # It's a tag name, create or get the tag
+                    tag = PostService.get_or_create_tag(db, tag_input)
+                
                 if tag:
-                    post_tag = PostTag(post_id=post_id, tag_id=tag_id)
+                    post_tag = PostTag(post_id=post_id, tag_id=tag.id)
                     db.add(post_tag)
             
             del update_data["tags"]

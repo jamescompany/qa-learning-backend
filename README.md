@@ -1,4 +1,4 @@
-# QA Learning Web - Backend
+# QA Learning 101 - Backend
 
 FastAPI 기반의 QA 학습 애플리케이션 백엔드 서버입니다.
 

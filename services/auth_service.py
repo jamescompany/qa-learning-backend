@@ -154,14 +154,17 @@ class AuthService:
             # Return success even if user not found (security)
             return "Password reset instructions sent if account exists"
         
-        # Generate reset token
-        reset_token = secrets.token_urlsafe(32)
-        user.reset_password_token = reset_token
+        # Generate temporary password
+        temp_password = secrets.token_urlsafe(12)
+        
+        # Update user's password to temporary password
+        user.hashed_password = get_password_hash(temp_password)
+        user.reset_password_token = secrets.token_urlsafe(32)
         user.reset_password_expire = datetime.utcnow() + timedelta(hours=1)
         db.commit()
         
-        logger.info(f"Password reset requested for: {user.email}")
-        return reset_token
+        logger.info(f"Temporary password generated for: {user.email}")
+        return temp_password
     
     @staticmethod
     def reset_password(db: Session, token: str, new_password: str) -> User:

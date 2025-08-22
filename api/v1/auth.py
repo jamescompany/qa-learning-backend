@@ -94,12 +94,18 @@ async def verify_email(
 @router.post("/password-reset")
 @limiter.limit("3/minute")
 async def request_password_reset(
-    request: PasswordResetRequest,
+    request: Request,
+    reset_request: PasswordResetRequest,
     db: Session = Depends(get_db)
 ):
     """Request password reset email"""
-    message = AuthService.request_password_reset(db, request.email)
-    return {"message": message}
+    result = AuthService.request_password_reset(db, reset_request.email)
+    
+    # For learning purposes, return temp password if generated
+    if result and result != "Password reset instructions sent if account exists":
+        return {"tempPassword": result, "message": "Temporary password generated"}
+    
+    return {"message": "Password reset instructions sent if account exists"}
 
 
 @router.post("/password-reset/confirm")
