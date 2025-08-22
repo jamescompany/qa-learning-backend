@@ -53,6 +53,8 @@ uploads/
 
 # Alembic
 alembic/versions/
+alembic.ini
+alembic.*.ini
 
 # Celery
 celerybeat-schedule
