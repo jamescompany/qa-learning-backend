@@ -14,7 +14,6 @@ from schemas.file import (
 from services.file_service import FileService
 from dependencies import (
     get_current_user,
-    get_current_verified_user,
     PaginationParams
 )
 from models import User, FileType
@@ -35,7 +34,7 @@ router = APIRouter(prefix="/files", tags=["Files"])
 async def upload_file(
     file: UploadFile = FastAPIFile(...),
     is_public: bool = Query(False, description="Make file publicly accessible"),
-    current_user: User = Depends(get_current_verified_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Upload a new file"""
@@ -59,7 +58,7 @@ async def upload_file(
 async def upload_multiple_files(
     files: list[UploadFile] = FastAPIFile(...),
     is_public: bool = Query(False, description="Make files publicly accessible"),
-    current_user: User = Depends(get_current_verified_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Upload multiple files"""

@@ -24,6 +24,7 @@ class Post(Base):
     status = Column(SQLEnum(PostStatus), default=PostStatus.DRAFT, nullable=False)
     author_id = Column(String, ForeignKey("users.id"), nullable=False)
     view_count = Column(Integer, default=0, nullable=False)
+    likes_count = Column(Integer, default=0, nullable=False)
     is_featured = Column(Boolean, default=False, nullable=False)
     published_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -32,6 +33,7 @@ class Post(Base):
     author = relationship("User", back_populates="posts")
     comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
     tags = relationship("Tag", secondary="post_tags", back_populates="posts")
+    likes = relationship("PostLike", back_populates="post", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Post(id={self.id}, title={self.title}, status={self.status})>"

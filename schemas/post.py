@@ -1,8 +1,11 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 from models.post import PostStatus
 from .user import UserPublic
+
+if TYPE_CHECKING:
+    from .comment import CommentResponse
 
 
 class TagBase(BaseModel):
@@ -52,10 +55,13 @@ class PostResponse(PostBase):
     author_id: str
     author: UserPublic
     view_count: int
+    likes_count: int = 0
+    user_has_liked: Optional[bool] = False
     published_at: Optional[datetime]
     created_at: datetime
     updated_at: Optional[datetime]
     tags: List[TagResponse]
+    comments: Optional[List["CommentResponse"]] = []
     comment_count: Optional[int] = 0
 
     class Config:
@@ -82,3 +88,8 @@ class PostPublic(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Import at the end to avoid circular imports
+from .comment import CommentResponse
+PostResponse.model_rebuild()

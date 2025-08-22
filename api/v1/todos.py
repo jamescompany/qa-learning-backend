@@ -184,6 +184,74 @@ async def update_todo(
     return todo
 
 
+@router.patch("/{todo_id}", response_model=TodoResponse)
+async def patch_todo(
+    todo_id: str,
+    todo_update: TodoUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Partially update todo by ID"""
+    todo = db.query(Todo).filter(
+        and_(
+            Todo.id == todo_id,
+            Todo.user_id == current_user.id
+        )
+    ).first()
+    
+    if not todo:
+        raise TodoNotFoundException()
+    
+    update_data = todo_update.dict(exclude_unset=True)
+    
+    # Track if status changes to done
+    if "status" in update_data:
+        if update_data["status"] == TodoStatus.DONE and todo.status != TodoStatus.DONE:
+            update_data["completed_at"] = datetime.utcnow()
+        elif update_data["status"] != TodoStatus.DONE:
+            update_data["completed_at"] = None
+    
+    # Update todo fields
+    for field, value in update_data.items():
+        setattr(todo, field, value)
+    
+    db.commit()
+    db.refresh(todo)
+    
+    return todo
+
+
+@router.patch("/{todo_id}/toggle", response_model=TodoResponse)
+async def toggle_todo(
+    todo_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Toggle todo completion status"""
+    todo = db.query(Todo).filter(
+        and_(
+            Todo.id == todo_id,
+            Todo.user_id == current_user.id
+        )
+    ).first()
+    
+    if not todo:
+        raise TodoNotFoundException()
+    
+    # Toggle between TODO and DONE status
+    if todo.status == TodoStatus.DONE:
+        todo.status = TodoStatus.TODO
+        todo.completed_at = None
+    else:
+        todo.status = TodoStatus.DONE
+        todo.completed_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(todo)
+    
+    return todo
+
+
 @router.delete("/{todo_id}")
 async def delete_todo(
     todo_id: str,

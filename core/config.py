@@ -4,7 +4,7 @@ from pydantic import Field, validator
 import os
 
 class Settings(BaseSettings):
-    APP_NAME: str = "QA Learning Web"
+    APP_NAME: str = "QA Learning 101"
     APP_VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     

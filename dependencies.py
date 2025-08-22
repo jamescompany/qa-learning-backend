@@ -46,6 +46,26 @@ async def get_current_user(
     return user
 
 
+async def get_optional_current_user(
+    token: Optional[str] = Depends(OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False)),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """Get current user if token is provided, otherwise return None"""
+    if not token:
+        return None
+    
+    try:
+        user_id = verify_token(token, "access")
+    except JWTError:
+        return None
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or user.is_deleted or not user.is_active:
+        return None
+    
+    return user
+
+
 async def get_current_active_user(
     current_user: User = Depends(get_current_user)
 ) -> User:

@@ -115,3 +115,11 @@ class DatabaseException(BaseAPIException):
 class ExternalServiceException(BaseAPIException):
     status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     detail = "External service unavailable"
+
+
+class EventNotFoundException(NotFoundException):
+    detail = "Event not found"
+
+
+class BoardNotFoundException(NotFoundException):
+    detail = "Board not found"

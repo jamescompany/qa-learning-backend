@@ -40,6 +40,9 @@ class User(Base):
     todos = relationship("Todo", back_populates="user", cascade="all, delete-orphan")
     comments = relationship("Comment", back_populates="author", cascade="all, delete-orphan")
     uploaded_files = relationship("File", back_populates="uploader", cascade="all, delete-orphan")
+    calendar_events = relationship("CalendarEvent", back_populates="user", cascade="all, delete-orphan")
+    kanban_boards = relationship("KanbanBoard", back_populates="user", cascade="all, delete-orphan")
+    liked_posts = relationship("PostLike", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, username={self.username})>"

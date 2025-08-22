@@ -11,7 +11,6 @@ from schemas.comment import (
 )
 from dependencies import (
     get_current_user,
-    get_current_verified_user,
     PaginationParams
 )
 from models import User, Comment, Post
@@ -112,7 +111,7 @@ async def get_comment(
 @router.post("/", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
 async def create_comment(
     comment_create: CommentCreate,
-    current_user: User = Depends(get_current_verified_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Create a new comment"""
