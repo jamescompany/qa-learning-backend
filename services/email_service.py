@@ -22,6 +22,10 @@ class EmailService:
             self.smtp_user,
             self.smtp_password
         ])
+        
+        # Log configuration for debugging
+        if self.enabled:
+            logger.info(f"Email service initialized with host: {self.smtp_host}, port: {self.smtp_port}, user: {self.smtp_user[:3]}***")
     
     def send_email(
         self,
@@ -64,6 +68,7 @@ class EmailService:
             
             # Send email
             with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                # server.set_debuglevel(1)  # Uncomment for debugging
                 server.starttls()
                 server.login(self.smtp_user, self.smtp_password)
                 server.send_message(msg, to_addrs=recipients)
