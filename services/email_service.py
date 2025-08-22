@@ -66,8 +66,8 @@ class EmailService:
             if bcc:
                 recipients.extend(bcc)
             
-            # Send email
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+            # Send email with timeout
+            with smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=30) as server:
                 # server.set_debuglevel(1)  # Uncomment for debugging
                 server.starttls()
                 server.login(self.smtp_user, self.smtp_password)

@@ -76,20 +76,22 @@ async def send_contact_message(
         </html>
         """
         
-        # Send email to admin
-        email_sent = email_service.send_email(
-            to_email=admin_email,
-            subject=subject,
-            body=body,
-            html_body=html_body
-        )
-        
-        if not email_sent:
-            logger.error(f"Failed to send contact email from {contact_data.email}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to send message. Please try again later."
+        # Send email to admin (with timeout handling)
+        try:
+            email_sent = email_service.send_email(
+                to_email=admin_email,
+                subject=subject,
+                body=body,
+                html_body=html_body
             )
+            
+            if not email_sent:
+                logger.error(f"Failed to send contact email from {contact_data.email}")
+                # Return success to user but log the failure
+                logger.error("Email service returned False but we'll return success to avoid blocking user")
+        except Exception as e:
+            logger.error(f"Email sending failed but continuing: {e}")
+            # Don't block the user if email fails
         
         # Send confirmation email to user (in background)
         def send_confirmation():
