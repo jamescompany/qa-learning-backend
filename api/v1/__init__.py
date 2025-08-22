@@ -8,6 +8,7 @@ from .files import router as files_router
 from .websocket import router as websocket_router
 from .calendar import router as calendar_router
 from .kanban import router as kanban_router
+from .contact import router as contact_router
 
 api_router = APIRouter()
 
@@ -20,5 +21,6 @@ api_router.include_router(files_router)
 api_router.include_router(websocket_router)
 api_router.include_router(calendar_router)
 api_router.include_router(kanban_router)
+api_router.include_router(contact_router)
 
 __all__ = ["api_router"]
