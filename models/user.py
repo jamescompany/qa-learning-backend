@@ -32,6 +32,7 @@ class User(Base):
     verification_code = Column(String, nullable=True)
     reset_password_token = Column(String, nullable=True)
     reset_password_expire = Column(DateTime(timezone=True), nullable=True)
+    requires_password_change = Column(Boolean, default=False, nullable=False)
     last_login = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

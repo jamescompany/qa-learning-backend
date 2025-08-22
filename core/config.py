@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     SMTP_USER: Optional[str] = Field(default=None, env="SMTP_USER")
     SMTP_PASSWORD: Optional[str] = Field(default=None, env="SMTP_PASSWORD")
     SMTP_FROM: Optional[str] = Field(default=None, env="SMTP_FROM")
+    ADMIN_EMAIL: Optional[str] = Field(default=None, env="ADMIN_EMAIL")
     
     UPLOAD_DIR: str = Field(default="uploads", env="UPLOAD_DIR")
     MAX_UPLOAD_SIZE: int = Field(default=10 * 1024 * 1024, env="MAX_UPLOAD_SIZE")  # 10MB
