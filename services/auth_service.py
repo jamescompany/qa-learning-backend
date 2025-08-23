@@ -49,6 +49,12 @@ class AuthService:
         if not is_valid:
             raise BadRequestException(detail=message)
         
+        # Check if terms and privacy are accepted
+        if not request.terms_accepted:
+            raise BadRequestException(detail="You must accept the terms of service")
+        if not request.privacy_accepted:
+            raise BadRequestException(detail="You must accept the privacy policy")
+        
         # Create new user
         verification_code = generate_verification_code()
         hashed_password = get_password_hash(request.password)
@@ -59,6 +65,9 @@ class AuthService:
             hashed_password=hashed_password,
             full_name=request.full_name,
             verification_code=verification_code,
+            terms_accepted=request.terms_accepted,
+            privacy_accepted=request.privacy_accepted,
+            terms_accepted_at=datetime.utcnow() if request.terms_accepted else None,
             is_active=True,
             is_verified=False
         )
@@ -89,6 +98,17 @@ class AuthService:
         if not user.is_active:
             raise BadRequestException(detail="User account is inactive")
         
+        # Check if user has accepted terms (for older accounts)
+        if not getattr(user, 'terms_accepted', False) or not getattr(user, 'privacy_accepted', False):
+            # Return special response indicating terms acceptance is required
+            return {
+                "access_token": None,
+                "refresh_token": None,
+                "token_type": "bearer",
+                "requires_terms_acceptance": True,
+                "user_id": user.id
+            }
+        
         # Update last login
         user.last_login = datetime.utcnow()
         db.commit()
@@ -102,7 +122,8 @@ class AuthService:
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "token_type": "bearer"
+            "token_type": "bearer",
+            "requires_terms_acceptance": False
         }
     
     @staticmethod

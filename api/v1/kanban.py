@@ -14,7 +14,8 @@ from schemas.kanban import (
     ColumnResponse,
     CardCreate,
     CardUpdate,
-    CardResponse
+    CardResponse,
+    CardMoveRequest
 )
 from dependencies import get_current_user
 from models import User, KanbanBoard, KanbanColumn, KanbanCard
@@ -294,8 +295,7 @@ async def delete_card(
 @router.post("/cards/{card_id}/move", response_model=CardResponse)
 async def move_card(
     card_id: str,
-    target_column_id: str,
-    position: Optional[int] = None,
+    move_request: CardMoveRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -312,7 +312,7 @@ async def move_card(
     
     target_column = db.query(KanbanColumn).join(KanbanBoard).filter(
         and_(
-            KanbanColumn.id == target_column_id,
+            KanbanColumn.id == move_request.target_column_id,
             KanbanBoard.user_id == current_user.id
         )
     ).first()
@@ -320,9 +320,9 @@ async def move_card(
     if not target_column:
         raise HTTPException(status_code=404, detail="Target column not found")
     
-    card.column_id = target_column_id
-    if position is not None:
-        card.position = position
+    card.column_id = move_request.target_column_id
+    if move_request.position is not None:
+        card.position = move_request.position
     
     card.updated_at = datetime.utcnow()
     db.commit()

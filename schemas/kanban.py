@@ -90,3 +90,8 @@ class BoardResponse(BaseModel):
 class BoardList(BaseModel):
     boards: List[BoardResponse]
     total: int
+
+
+class CardMoveRequest(BaseModel):
+    target_column_id: str
+    position: Optional[int] = None

@@ -8,7 +8,7 @@ from .security import (
     generate_password,
     generate_verification_code,
     validate_password,
-    oauth2_scheme
+    security
 )
 from .exceptions import (
     BaseAPIException,
@@ -46,7 +46,7 @@ __all__ = [
     "generate_password",
     "generate_verification_code",
     "validate_password",
-    "oauth2_scheme",
+    "security",
     "BaseAPIException",
     "BadRequestException",
     "UnauthorizedException",

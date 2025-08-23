@@ -1,6 +1,6 @@
 from typing import Optional, Generator
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from jose import JWTError
 from database import get_db
@@ -12,7 +12,8 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+# HTTPBearer for Swagger UI and API authentication
+http_bearer = HTTPBearer(auto_error=True)
 
 limiter = Limiter(
     key_func=get_remote_address,
@@ -25,9 +26,12 @@ def get_redis_client() -> redis.Redis:
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
     db: Session = Depends(get_db)
 ) -> User:
+    """Get current user from HTTPBearer token"""
+    token = credentials.credentials
+    
     try:
         user_id = verify_token(token, "access")
     except JWTError:
@@ -47,15 +51,15 @@ async def get_current_user(
 
 
 async def get_optional_current_user(
-    token: Optional[str] = Depends(OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False)),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
     db: Session = Depends(get_db)
 ) -> Optional[User]:
     """Get current user if token is provided, otherwise return None"""
-    if not token:
+    if not credentials:
         return None
     
     try:
-        user_id = verify_token(token, "access")
+        user_id = verify_token(credentials.credentials, "access")
     except JWTError:
         return None
     
