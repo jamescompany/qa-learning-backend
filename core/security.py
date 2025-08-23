@@ -3,14 +3,20 @@ from typing import Optional, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import secrets
 import string
 from .config import settings
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+
+# Use HTTPBearer for Swagger UI Bearer token authentication
+security = HTTPBearer(
+    scheme_name="Bearer",
+    description="Enter the JWT token",
+    auto_error=True
+)
 
 
 def create_access_token(

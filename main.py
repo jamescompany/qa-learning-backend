@@ -1,5 +1,6 @@
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from contextlib import asynccontextmanager
 import logging
 import sys
@@ -54,6 +55,12 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutting down...")
 
 
+# Configure Swagger UI to use Bearer authentication only
+swagger_ui_init_oauth = {
+    "usePkceWithAuthorizationCodeGrant": False,
+    "clientId": None,
+}
+
 # Create FastAPI app
 app = FastAPI(
     title=settings.APP_NAME,
@@ -62,7 +69,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
+    swagger_ui_init_oauth=swagger_ui_init_oauth,
+    swagger_ui_parameters={"persistAuthorization": True}
 )
 
 # Setup middleware

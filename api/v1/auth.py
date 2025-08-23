@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
+from datetime import datetime
+from pydantic import BaseModel
 from database import get_db
 from schemas.auth import (
     LoginRequest,
@@ -15,8 +17,7 @@ from schemas.user import UserResponse
 from services import AuthService
 from dependencies import get_current_user, limiter
 from models import User
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from core.security import create_access_token, create_refresh_token
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -34,7 +35,7 @@ async def register(
 
 
 @router.post("/login", response_model=TokenResponse)
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 async def login(
     request: Request,
     login_data: LoginRequest,
@@ -132,6 +133,36 @@ async def change_password(
         request.new_password
     )
     return {"message": "Password changed successfully"}
+
+
+class AcceptTermsRequest(BaseModel):
+    user_id: str
+
+@router.post("/accept-terms")
+async def accept_terms(
+    request: AcceptTermsRequest,
+    db: Session = Depends(get_db)
+):
+    """Accept terms and privacy policy for existing users"""
+    user = db.query(User).filter(User.id == request.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.terms_accepted = True
+    user.privacy_accepted = True
+    user.terms_accepted_at = datetime.utcnow()
+    
+    db.commit()
+    
+    # Create tokens after accepting terms
+    access_token = create_access_token(subject=user.id)
+    refresh_token = create_refresh_token(subject=user.id)
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
 
 
 @router.post("/logout")
