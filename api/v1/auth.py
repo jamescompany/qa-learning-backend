@@ -61,7 +61,7 @@ async def update_profile(
 ):
     """Update current user profile"""
     # Update allowed fields only
-    allowed_fields = ["full_name", "bio", "avatar_url"]
+    allowed_fields = ["full_name", "bio", "avatar_url", "location", "website"]
     for field in allowed_fields:
         if field in update_data:
             setattr(current_user, field, update_data[field])
